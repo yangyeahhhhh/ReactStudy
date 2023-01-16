@@ -1,4 +1,4 @@
-import { observable, action, computed, makeObservable } from 'mobx';
+import { observable, action, computed, makeObservable, toJS } from 'mobx';
 
 class TodoStore {
 
@@ -7,10 +7,26 @@ class TodoStore {
   }
 
   @observable
-  _todo = {} // id, title, date
+  _todo = {}; // id, title, date
+
+  @observable
+  _todos = [];
+
+  @observable
+  _searchText = '';
 
   get todo(){
     return this._todo;
+  }
+
+  @computed
+  get todos(){
+    // return this._todos ? this._todos.slice() : [];
+    return toJS(this._todos);
+  }
+
+  get searchText(){
+    return this._searchText;
   }
   
   @action
@@ -19,6 +35,40 @@ class TodoStore {
       ...this._todo,
       [name] : value
     }
+  }
+
+  @action
+  setSearchText(searchText){
+    this._searchText = searchText;
+  }
+
+  @action
+  addTodos(todo){
+    this._todos.push(todo)
+  }
+
+  @action
+  selectedTodo(todo){
+    this._todo = todo;
+  }
+
+  @action
+  updateTodo(){
+    let foundTodo = this._todos.find( (todo) => todo.id === this._todo.id);
+    foundTodo.title = this._todo.title;
+    foundTodo.date = this._todo.date;
+
+    this._todo = {};
+  }
+
+  @action
+  removeTodo(){
+    let index = this._todos.findIndex( todo => todo.id === this._todo.id );
+    if(index > -1){
+      this._todos.splice(index, 1);
+    }
+
+    this._todo = {};
   }
 
 }
